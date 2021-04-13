@@ -1,0 +1,13 @@
+<launch>
+
+<param name = "use_sim_time" value="true"/> 
+<param name = "waypoint_file_name" value="/home/miki/waypoints/kerulo.csv"/> 
+<node pkg="rosbag" type="play" name="bagplayer" output="screen" args="/home/miki/bags/parkolo_LGSVL/2021-03-29-10-35-10.bag  --clock"/>
+
+<node name="object_transform" pkg="object_transform" type="object_transform" output="screen"/>
+<node pkg="nissan_bringup" type="bare_planner.py" name="bare_planner_py"/>
+<node pkg="nissan_bringup" type="global_waypoint_monitor.py" name="global_waypoint_monitor_py"/>
+<include file="$(find nissan_bringup)/launch/sensory/car_parameters_leaf.launch"/>
+<!--node pkg="obstacle" type="obstacle_avoid_.py" name="avoidance"/-->
+
+</launch>
