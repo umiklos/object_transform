@@ -30,7 +30,7 @@
     geometry_msgs::TransformStamped tfstamped;
     geometry_msgs::PointStamped in,out;
     
-    ros::Rate sleep(20);
+    //ros::Rate sleep(20);
     while(ros::ok())
     {
         try{
@@ -68,9 +68,6 @@
 
         bounding.pose = pose_transformed;
 
-
-
-
         
         geometry_msgs::Point po,po2;
         
@@ -106,7 +103,7 @@
         
         pub.publish(ma);
         
-        sleep.sleep();
+        //sleep.sleep();
         break;
     }
 }
