@@ -30,7 +30,7 @@
     geometry_msgs::TransformStamped tfstamped;
     geometry_msgs::PointStamped in,out;
     
-    ros::Rate sleep(10);
+    ros::Rate sleep(20);
     while(ros::ok())
     {
         try{
