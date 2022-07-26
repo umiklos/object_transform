@@ -1,6 +1,7 @@
  #include <ros/ros.h>
  #include <visualization_msgs/Marker.h>
 #include <visualization_msgs/MarkerArray.h>
+#include "std_msgs/String.h"
 #include <iostream>
 #include "autoware_msgs/DetectedObjectArray.h"
 #include "autoware_msgs/DetectedObject.h"
@@ -22,6 +23,7 @@
 
  ros::Publisher pub;
  tf2_ros::Buffer tf_buffer;
+ //std::string input_topic;
 
  
 
@@ -124,8 +126,15 @@ int main(int argc, char **argv)
     tf2_ros::TransformListener tf2_list(tf_buffer);
     tf::StampedTransform local_transform;
     geometry_msgs::PoseStamped converted;
+    std::string input_topic;
 
-    ros::Subscriber sub = nodeh.subscribe("/detection/lidar_detector/objects",1000,transformer);
+    
+    // input topic can be /detection/lidar_detector/objects_markers   or /detection/camera_detector/objects
+    nodeh.param<std::string>("input_topic", input_topic, "/detection/lidar_detector/objects_markers");
+
+
+
+    ros::Subscriber sub = nodeh.subscribe(input_topic,1000,transformer);
     
     pub = nodeh.advertise<visualization_msgs::MarkerArray>("converted_euclidean_objects",1);
 
