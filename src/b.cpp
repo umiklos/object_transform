@@ -1,7 +1,6 @@
  #include <ros/ros.h>
  #include <visualization_msgs/Marker.h>
 #include <visualization_msgs/MarkerArray.h>
-#include "std_msgs/String.h"
 #include <iostream>
 #include "autoware_msgs/DetectedObjectArray.h"
 #include "autoware_msgs/DetectedObject.h"
@@ -23,11 +22,10 @@
 
  ros::Publisher pub;
  tf2_ros::Buffer tf_buffer;
- //std::string input_topic;
 
  
 
- void transformer(const visualization_msgs::MarkerArray& poly)
+ void transformer(const autoware_msgs::DetectedObjectArray& poly)
 {
     geometry_msgs::TransformStamped tfstamped;
     geometry_msgs::PointStamped in,out;
@@ -36,7 +34,7 @@
     while(ros::ok())
     {
         try{
-            tfstamped = tf_buffer.lookupTransform("map", "left_os1/os1_lidar",ros::Time(0));
+            tfstamped = tf_buffer.lookupTransform("map", poly.header.frame_id,ros::Time(0));
         } catch (tf2::TransformException &ex) {
             ROS_WARN("Could NOT transform laser to map: %s", ex.what());
         }
@@ -46,15 +44,15 @@
       
         int i,j;
 
-        for ( j = 0; j < poly.markers.size(); j++ )
+        for ( j =0; j < poly.objects.size(); j++ )
 
         
         {
         visualization_msgs::Marker bounding;
         bounding.points.clear();
-        bounding.id = j;
+        bounding.id= j;
         bounding.header.frame_id = "map";
-        bounding.header.stamp = poly.markers[j].header.stamp;
+        bounding.header.stamp = poly.header.stamp;
         bounding.type = visualization_msgs::Marker::LINE_STRIP;
         bounding.action = visualization_msgs::Marker::ADD;
         bounding.scale.x = 0.2;
@@ -66,7 +64,7 @@
 
         geometry_msgs::Pose pose_transformed;
 
-        tf2::doTransform(poly.markers[j].pose, pose_transformed, tfstamped);
+        tf2::doTransform(poly.objects[j].pose, pose_transformed, tfstamped);
 
         bounding.pose = pose_transformed;
 
@@ -80,19 +78,12 @@
             //obj = poly.objects[j];
 
             
-            // for (i = 0; i < poly.objects[j].convex_hull.polygon.points.size(); i++)
-                
-            // {
-            //     po2.x = poly.objects[j].convex_hull.polygon.points[i].x;
-            //     po2.y = poly.objects[j].convex_hull.polygon.points[i].y;
-            //     po2.z = poly.objects[j].convex_hull.polygon.points[i].z;
-
-            for (i = 0; i < poly.markers[j].points.size(); i++)
+            for (i = 0; i < poly.objects[j].convex_hull.polygon.points.size(); i++)
                 
             {
-                po2.x = poly.markers[j].points[i].x;
-                po2.y = poly.markers[j].points[i].y;
-                po2.z = poly.markers[j].points[i].z;
+                po2.x = poly.objects[j].convex_hull.polygon.points[i].x;
+                po2.y = poly.objects[j].convex_hull.polygon.points[i].y;
+                po2.z = poly.objects[j].convex_hull.polygon.points[i].z;
 
                 
                 
@@ -126,15 +117,8 @@ int main(int argc, char **argv)
     tf2_ros::TransformListener tf2_list(tf_buffer);
     tf::StampedTransform local_transform;
     geometry_msgs::PoseStamped converted;
-    std::string input_topic;
 
-    
-    // input topic can be /detection/lidar_detector/objects_markers   or /detection/camera_detector/objects
-    nodeh.param<std::string>("input_topic", input_topic, "/detection/camera_detector/objects");
-
-
-
-    ros::Subscriber sub = nodeh.subscribe(input_topic,1000,transformer);
+    ros::Subscriber sub = nodeh.subscribe("/detection/lidar_detector/objects",1000,transformer);
     
     pub = nodeh.advertise<visualization_msgs::MarkerArray>("converted_euclidean_objects",1);
 
